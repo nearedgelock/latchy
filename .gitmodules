@@ -1,0 +1,8 @@
+[submodule "vcpkg"]
+	path = vcpkg
+	url = https://github.com/Microsoft/vcpkg.git
+	branch = master
+[submodule "clevisLib"]
+	path = clevisLib
+	url = ssh://git.nearedge-it.com/var/git/NearEDGE/clevisLib.git
+	branch = master

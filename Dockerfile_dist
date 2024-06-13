@@ -1,0 +1,11 @@
+#
+# This is a simple Dockerfile which aim at creating a distributable image
+# that is distroless but includes the latchy statically linked binary.
+#
+FROM gcr.io/distroless/static
+
+ENTRYPOINT ["/latchy"]
+CMD ["--help"]
+
+COPY latchystripped /latchy
+

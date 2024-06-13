@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+// Configuration for the latchy client. The main purpose is to describe how to get a secret, unlock it and deliver
+// it to the end application.
+//
+// The actual code may never use the protobuf modeling system but it does not hurt to use the proto file as a
+// documentation tool.... 
+
+
+package model.latchy;
+
+// Secret (locked) are available via different means.
+enum secretIngestionMethods {
+  UNKNOWNINGESTION   = 0;
+
+  STDIN              = 5;
+  
+  // Directly in the system where the client runs
+  IFILE              = 0x010;     // The secret is in the form of a file
+  IPIPE              = 0x020;     // The secret can be read from a named pipe.
+  IENVVAR            = 0x030;     // The secret is in the environment
+  
+  // Via an API - Currently this is undefined
+}
+
+enum secretLockingMethods {
+  UNKNOWNLOCKING     = 0;
+  
+  CLEVIS             = 0x010;     // The secret is locked in the form of a JWE compatible with the clevis OSS
+}
+
+// How are the unlocked secrets delivered to clients / end application 
+enum secretEgressMethods {
+  UNKNOWNEGRESS      = 0;
+  
+  STDOUT             = 5;
+  
+  // Directly in the system where the client runs
+  FILE               = 0x010;     // A file is created and then deleted once the end application consumed the secret. Presumably, this uses inotify 
+  PIPE               = 0x020;     // Similar to a file except there is no need to delete the file...
+}
+
+// This is the message used during ID acquisition phase
+// This *MAY* be sent using an insecure channel so make sure to only put things that are **NOT** sensitive information. 
+message secretDeclaration {
+  // Ingress
+  secretIngestionMethods  iMethod = 1; 
+  secretLockingMethods    lockingMethod = 2;
+  string                  in = 3;
+  string                  var = 4;
+    
+  // Egress
+  secretEgressMethods     eMethod = 10;
+  string                  out = 11;
+  uint32                  outCount = 12;  
+}
+
+message secretList {
+  repeated secretDeclaration  secrets = 1;
+}
+
