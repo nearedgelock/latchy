@@ -5,4 +5,4 @@
 [submodule "clevisLib"]
 	path = clevisLib
 	url = https://github.com/nearedgelock/clevisLib.git
-	branch = master
+	branch = main
