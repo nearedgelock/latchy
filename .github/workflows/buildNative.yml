@@ -1,0 +1,36 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Convert to Full Clone (vcpkg needs this)
+      run: cd vcpkg && git fetch --unshallow  --tags && cd ..
+
+    - name: Install cmake
+      run: sudo apt-get update && sudo apt-get -y install cmake meson
+
+    # VCPKG Bootstrap
+    - name: bootstrap vcpkg
+      run: make bootstrap
+
+    # Run the cmake setup for a Natve build
+    - name: CMake setup
+      run: make configure
+
+    # Build it!
+    - name: Build
+      run: make build
+

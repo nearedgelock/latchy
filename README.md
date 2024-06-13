@@ -21,13 +21,13 @@ make configure    <-- First time, or if you change any of the cmake related file
 make build
 ```
 ### Cross-compiling via an Alpine container
-This will produce a fully static bianry based on the MUSL tool-chain.
+This will produce a fully static binary, based on the MUSL tool-chain.
 
 ```bash
  make buildImage
 ```
 
-You can also create a local docker image using (which will implicitely call buildImage)
+You can also create a local docker image using (which implicitely calls buildImage)
 
 ```bash
 make packageDocker
