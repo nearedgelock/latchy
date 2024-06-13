@@ -8,7 +8,10 @@ This project was created for the following reasons:
 * Output the PT to a named pipe.
 
 ### Dependencies
-The library requires a number of external module and are directly included herein via git's submodule OR via vcpkg (which itself is included as a submodule).
+The library requires a number of external module and are directly included herein via git's submodule OR via vcpkg (which itself is included as a submodule). You may need to run the following command to pull submodule (particualrly submodules of submodules).
+```bash
+git submodule update --init --recursive
+```
 
 ### Compiling using the local tool chain
 ```bash
