@@ -4,5 +4,5 @@
 	branch = master
 [submodule "clevisLib"]
 	path = clevisLib
-	url = ssh://git.nearedge-it.com/var/git/NearEDGE/clevisLib.git
+	url = https://github.com/nearedgelock/clevisLib.git
 	branch = master
