@@ -63,13 +63,13 @@ namespace curlWrapper {
 
     if (curlSession != nullptr) {
       // We are not checking error codes since we essentially stuff libcurl with static data (constants) or
-      // data we just created. THe only exception is kid, which we presume is Ok. Anyway, it does not appear
+      // data we just created. The only exception is kid, which we presume is Ok. Anyway, it does not appear
       // that curl will fail on a too long kid
 
       // Global behavior options
       curl_easy_setopt(curlSession, CURLOPT_HEADER, 1);       // The response body will include the header. See the doc was a discussion about transfer size
       curl_easy_setopt(curlSession, CURLOPT_NOPROGRESS, 1);
-      curl_easy_setopt(curlSession, CURLOPT_NOSIGNAL, 0);     // We allow CURL to use signals. We may need to adjut s this later (but see the doc regarding DNS)
+      curl_easy_setopt(curlSession, CURLOPT_NOSIGNAL, 0);     // We allow CURL to use signals. We may need to adjust this later (but see the doc regarding DNS)
 
       // Callback related
       curl_easy_setopt(curlSession, CURLOPT_WRITEFUNCTION, write_callback);
@@ -81,7 +81,7 @@ namespace curlWrapper {
       headerList = curl_slist_append(headerList, "Content-Type: application/jwk+json");
       curl_easy_setopt(curlSession, CURLOPT_HTTPHEADER, headerList);
       curl_easy_setopt(curlSession, CURLOPT_POST, 1);
-      curl_easy_setopt(curlSession, CURLOPT_POSTFIELDS, (char*)key.data());
+      curl_easy_setopt(curlSession, CURLOPT_POSTFIELDS, (char*)key.data());     // This the data, i.e. the payload
       curl_easy_setopt(curlSession, CURLOPT_POSTFIELDSIZE, (long)key.size());
 
       result = curl_easy_perform(curlSession);

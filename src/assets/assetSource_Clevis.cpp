@@ -122,24 +122,28 @@ namespace assetserver {
     // Recover the private key used to encrypt the payload and produced the original JWE. This
     // is done via an interaction with the Tang server.
     json_auto_t*                  ephemeralKey_j = nullptr;
-    std::string                   ephemeralKey1_pub;
-
+    std::string                   exchangeKey_pub;
     try {
     // This series of action may throw an exception
     ephemeralKey_j = joseLibWrapper::generateKey(epkCurve_j);   // This is a full pairwise key, i.e. the private part is present
-    DEBUG() << "Ephemeral Key, before exchange1: " << joseLibWrapper::prettyPrintJson(ephemeralKey_j) << std::endl;
+    DEBUG() << "Ephemeral Key, this is the private part: " << joseLibWrapper::prettyPrintJson(ephemeralKey_j) << std::endl;
 
-    json_auto_t*                  ex_j = joseLibWrapper::keyExchange(epk_j, ephemeralKey_j);    // Perform a key extract between the EPK and the new ephemeral key
-    ephemeralKey1_pub = joseLibWrapper::prettyPrintJson(ex_j);
-    DEBUG() << "Ephemeral Key, after exchange1: " << ephemeralKey1_pub << std::endl;
+    json_auto_t*                  ex_j = joseLibWrapper::keyExchange(epk_j, ephemeralKey_j);    // Perform a key exchange between the EPK (pulic) and the new ephemeral key (private)
+    exchangeKey_pub = joseLibWrapper::prettyPrintJson(ex_j);
+    DEBUG() << "Exchange Key, after exchange between ephemeral (private) and EPK (public), this is a public key: " << exchangeKey_pub << std::endl;
+
+    json_auto_t*                  exchangedKey2_pub = nullptr;
+    exchangedKey2_pub = joseLibWrapper::keyExchange(ephemeralKey_j, activeServerKey_j);
+    DEBUG() << "Known public key from server: " << joseLibWrapper::prettyPrintJson(activeServerKey_j) << std::endl;
+    DEBUG() << "Ephemeral Key, after exchange2: " << joseLibWrapper::prettyPrintJson(exchangedKey2_pub) << std::endl;
+
  
-    std::string                   recoveredKeyFromTang;
+    std::string                   recoveringKey_pubFromTang;
     std::chrono::time_point<std::chrono::steady_clock, std::chrono::nanoseconds>   giveUpTime(std::chrono::steady_clock::now() + 5h);
-
     while (!isCancelled) {
       try {
-        recoveredKeyFromTang = curlWrapper::keyRecoverViaTang(extractedUrl, json_string_value(kid_j), ephemeralKey1_pub, queryString(), isCancelled);
-        ephemeralKey1_pub.assign(ephemeralKey1_pub.size(), (char) 0);  // Clear the memory
+        recoveringKey_pubFromTang = curlWrapper::keyRecoverViaTang(extractedUrl, json_string_value(kid_j), exchangeKey_pub, queryString(), isCancelled);
+        exchangeKey_pub.assign(exchangeKey_pub.size(), (char) 0);  // Clear the memory
         break;
       } catch (joseLibWrapper::decrypt::permanentTangFailure& exc) {
         // Permanent error, just rethrow to higher up
@@ -154,23 +158,19 @@ namespace assetserver {
       }
     }
 
-    json_auto_t*                  exchangedKey2 = nullptr;
-    json_auto_t*                  recoveredKey = nullptr;
+    json_auto_t*                  recoveringKey_pub = nullptr;
+    recoveringKey_pub = joseLibWrapper::extractB64ToJson(recoveringKey_pubFromTang, true);
+    DEBUG() << "Recovering key from server: " << joseLibWrapper::prettyPrintJson(recoveringKey_pub) << std::endl;
 
-    recoveredKey = joseLibWrapper::extractB64ToJson(recoveredKeyFromTang, true);
 
-    DEBUG() << "Recovering key from server: " << joseLibWrapper::prettyPrintJson(recoveredKey) << std::endl;
-
-    exchangedKey2 = joseLibWrapper::keyExchange(ephemeralKey_j, activeServerKey_j);
-    DEBUG() << "Ephemeral Key, after exchange2: " << joseLibWrapper::prettyPrintJson(exchangedKey2) << std::endl;
-
-    joseLibWrapper::removePrivate(recoveredKey);
-    unwrappingJWK_j = joseLibWrapper::keyExchange(recoveredKey, exchangedKey2, true);
-    //Probably not a good idea to show this, even for debug DEBUG() << "Unwrapping JWK: " << joseLibWrapper::prettyPrintJson(unwrappingJWK_j) << std::endl;
+    joseLibWrapper::removePrivate(recoveringKey_pub);
+    unwrappingJWK_j = joseLibWrapper::keyExchange(recoveringKey_pub, exchangedKey2_pub, true);
+    //Probably not a good idea to show this, even for debug
+    DEBUG() << "Unwrapping key: " << joseLibWrapper::prettyPrintJson(unwrappingJWK_j) << std::endl;
 
     // Just make sure things get properly destroyed, even if they are on the stack
-    recoveredKeyFromTang.assign(recoveredKeyFromTang.size(), (char) 0);
-    //exchangedKey2.assign(exchangedKey2.size(), (char) 0);   // Clear the memory
+    recoveringKey_pubFromTang.assign(recoveringKey_pubFromTang.size(), (char) 0);
+    //exchangedKey2_pub.assign(exchangedKey2_pub.size(), (char) 0);   // Clear the memory
     //ephemeralKey.assign(ephemeralKey.size(), (char) 0);     // Clear the memory
     } catch (std::exception& exc) {
       throw;
