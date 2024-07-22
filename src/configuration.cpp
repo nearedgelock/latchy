@@ -73,7 +73,7 @@ namespace configuration {
       } else {
         // The correct JSON keyword is present. But the [] are missing
         // ATM we simply raise an error!
-        throw std::runtime_error("Invalaid configuration string. We expect the secrets value to be an array / list");
+        throw std::runtime_error("Invalid configuration string. We expect the secrets value to be an array / list");
       }
     } else {
       if (firstSquarebracket <  firstBrace) {

@@ -118,9 +118,11 @@ namespace assets {
     if ( (cfg.lockingmethod() == model::latchy::secretLockingMethods::UNKNOWNLOCKING) or (cfg.lockingmethod() == model::latchy::secretLockingMethods::CLEVIS) ) {
       if (cfg.in().empty() == false) {
         // We assume that the input method is a file or a named pipe (the processing is the same)
+        DEBUG() << "JWE source is file or named pipe" << std::endl;
         source = std::make_shared<assetserver::assetFileClevis>(cfg.in(), metaData, autostart);
       } else if ( (cfg.imethod() == model::latchy::secretIngestionMethods::STDIN) or (cfg.imethod() == model::latchy::secretIngestionMethods::UNKNOWNINGESTION)) {
         // Assume STDIN
+        DEBUG() << "JWE source is STDIN" << std::endl;
         source = std::make_shared<assetserver::assetFileClevis>("", metaData, autostart);
       } else  if (cfg.imethod() == model::latchy::secretIngestionMethods::IENVVAR) {
         // Env var - Future
