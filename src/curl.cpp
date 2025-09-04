@@ -133,30 +133,33 @@ namespace curlWrapper {
         std::getline(ss, responseLine);
 
         std::string         line;
-        std::streampos      contentPostion;
-        while (std::getline(ss, line)) {
-          // All we really want to do is to skip the headers and get to the content.
-          // So we continue until we find the line that starts with Content-Lenth
-          // Lets make sure we are case insensitive.
-          std::for_each(line.begin(), line.end(), [](char & c){ c = ::tolower(c); });
+        std::streampos      contentPosition;
+        bool foundHeaderEnd = false;
 
-          if (line.find("content-length") != std::string::npos) {
-            //Found the last header - Remember where the content starts
-            contentPostion = ss.tellg();
+        while (std::getline(ss, line)) {
+          // Remove \r if present (handle both \r\n and \n line endings)
+          if (!line.empty() && line.back() == '\r') {
+            line.pop_back();
+          }
+    
+          // Empty line indicates end of headers
+          if (line.empty()) {
+            contentPosition = ss.tellg();
+            foundHeaderEnd = true;
             break;
           }
         }
 
-        if (responseLine.empty() == false) {
+        if (foundHeaderEnd &&  responseLine.empty() == false) {
           std::deque<std::string>    decomposed = misc::split(responseLine, ' ');
           if (decomposed.size() >= 2) {
             if (decomposed[1] == "200") {
-              return ss.str().substr(contentPostion);    // Remaining data in ss is the content. There may be empty lines at the beginning
+              return ss.str().substr(contentPosition);    // Remaining data in ss is the content. There may be empty lines at the beginning
             }
 
             if ( (decomposed[1] == "406") or (decomposed[1] == "418") ) {
               // The server will NEVER response positively
-              throw permanentTangFailure(url + "-" + ss.str().substr(contentPostion));
+              throw permanentTangFailure(url + "-" + ss.str().substr(contentPosition));
             }
           }
         }
