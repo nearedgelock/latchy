@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <cstring>
 #include "curl.h"
 #include <curl/curl.h>      // From libcurl
 
@@ -49,6 +50,25 @@ namespace curlWrapper {
     return nmemb;
   }
 
+  const char* find_ca_bundle() {
+    const char* ca_paths[] = {
+        "/etc/pki/tls/certs/ca-bundle.crt",     // RHEL/CentOS/Rocky/Fedora
+        "/etc/ssl/certs/ca-certificates.crt",   // Debian/Ubuntu
+        "/etc/ssl/ca-bundle.pem",               // openSUSE
+        "/etc/ssl/cert.pem",                    // Alpine Linux
+        "/usr/local/share/certs/ca-root-nss.crt", // FreeBSD
+        "/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem", // Modern RHEL
+        nullptr
+    };
+    
+    for (int i = 0; ca_paths[i]; i++) {
+        if (access(ca_paths[i], R_OK) == 0) {
+            return ca_paths[i];
+        }
+    }
+    return nullptr;
+}
+
   std::string keyRecoverViaTang(const std::string& url, const std::string& kid, const std::string& key, const std::string& queryString, const std::atomic_bool& cancelled ) {
     globalInit();
 
@@ -62,6 +82,13 @@ namespace curlWrapper {
     DEBUG() << completeUrl << std::endl;
 
     if (curlSession != nullptr) {
+      const char*         ca_bundle = find_ca_bundle();
+      if (ca_bundle) {
+        curl_easy_setopt(curlSession, CURLOPT_CAINFO, ca_bundle);
+      } else {
+        throw permanentTangFailure(url + " - " + "No CA certificates, this is non recoverable");
+     }
+
       // We are not checking error codes since we essentially stuff libcurl with static data (constants) or
       // data we just created. The only exception is kid, which we presume is Ok. Anyway, it does not appear
       // that curl will fail on a too long kid
@@ -84,11 +111,18 @@ namespace curlWrapper {
       curl_easy_setopt(curlSession, CURLOPT_POSTFIELDS, (char*)key.data());     // This the data, i.e. the payload
       curl_easy_setopt(curlSession, CURLOPT_POSTFIELDSIZE, (long)key.size());
 
+      char                error_buffer[CURL_ERROR_SIZE];
+      curl_easy_setopt(curlSession, CURLOPT_ERRORBUFFER, error_buffer);
+
       result = curl_easy_perform(curlSession);
 
       curl_easy_cleanup(curlSession);
 
       if (result != CURLcode::CURLE_OK) {
+        INFO() << "Curl reported an error - " << curl_easy_strerror(result) << std::endl;
+        if (strlen(error_buffer) != 0) {
+          DEBUG() << "Curl detailed error - " << error_buffer << std::endl;
+        }
         throw failedTangInteraction(url);
       } else {
 

@@ -3,7 +3,7 @@ $(eval $(ARGS):;@:)
 makefileDir := $(dir $(firstword $(MAKEFILE_LIST)))
 
 CMAKE := /usr/bin/cmake
-
+USESTATIC := 1
 default: build
 
 #
