@@ -1,4 +1,4 @@
-FROM alpine:edge as builder
+FROM alpine:edge AS builder
 
 RUN echo "#!/bin/ash" > /tmp/entrypoint.sh \
   && echo "cd /Source" >> /tmp/entrypoint.sh \

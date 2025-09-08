@@ -12,7 +12,7 @@ default: build
 
 .PHONY: bootstrap
 bootstrap:
-	git submodule update --init vcpkg && vcpkg/bootstrap-vcpkg.sh --disableMetrics
+	git submodule update --remote vcpkg && vcpkg/bootstrap-vcpkg.sh --disableMetrics
 
 .PHONY: clean
 clean:
@@ -34,12 +34,19 @@ build:
 #
 # Build in a container, mostly for producing a MUSL based static binary. Using Alpine as the base environment.
 #
+
+# Build latchy inside Alpine
 .PHONY: buildImage
 buildImage:
 	@$(makefileDir)/buildStatic.sh
 
+# Package a lean image that essentially only includes latchy
 .PHONY: packageDocker
 packageDocker: buildImage
 	strip -o build/Alpine/build/latchystripped build/Alpine/build/latchy
 	docker build --tag latchy -f ./Dockerfile_dist build/Alpine/build
+
+# If desire, you can push the last image to you own repository.
+# docker tag latchy <yourreposerver>/latchy
+# docker push <yourreposerver>/latchy
 

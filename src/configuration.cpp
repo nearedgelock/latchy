@@ -49,7 +49,7 @@ namespace configuration {
 
   std::string convertMsgToJsonString(const google::protobuf::Message& m) {
     std::string retval;
-    google::protobuf::util::MessageToJsonString(m, &retval);
+    absl::Status result = google::protobuf::util::MessageToJsonString(m, &retval);
      return retval;
   }
 
@@ -91,7 +91,7 @@ namespace configuration {
     jsonOpts.ignore_unknown_fields = true;
     jsonOpts.case_insensitive_enum_parsing = false;
 
-    google::protobuf::util::Status  result = google::protobuf::util::JsonStringToMessage(inputConfiguration, (google::protobuf::Message*) &message, jsonOpts);
+    absl::Status  result = google::protobuf::util::JsonStringToMessage(inputConfiguration, (google::protobuf::Message*) &message, jsonOpts);
     if (result.ok() == true) {
       return message;
     }

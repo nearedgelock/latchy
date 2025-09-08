@@ -14,6 +14,7 @@ add_executable(${CMAKE_PROJECT_NAME})
 
 include (jose.cmake)
 
+find_package(absl CONFIG REQUIRED)
 find_package(Protobuf CONFIG REQUIRED)
 find_package(Botan CONFIG REQUIRED)
 find_package(ZLIB REQUIRED)
@@ -33,6 +34,16 @@ set(BUILD_EXECUTABLE OFF)
 add_subdirectory(clevisLib/src)
 
 
-target_link_libraries(${CMAKE_PROJECT_NAME} models Botan::Botan-static CURL::libcurl ${JOSE_INCLUDE_OBJECT} libjose_static ${Protobuf_LIBRARIES} ${CMAKE_CURRENT_BINARY_DIR}/vcpkg_installed/x64-linux/lib/libjansson.a ZLIB::ZLIB OpenSSL::Crypto)
+target_link_libraries(${CMAKE_PROJECT_NAME}
+  models
+  Botan::Botan-static
+  CURL::libcurl
+  ${JOSE_INCLUDE_OBJECT}
+  libjose_static
+  protobuf::libprotobuf
+  ${CMAKE_CURRENT_BINARY_DIR}/vcpkg_installed/x64-linux/lib/libjansson.a
+  ZLIB::ZLIB
+  OpenSSL::Crypto
+)
 
 

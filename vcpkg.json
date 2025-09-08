@@ -2,8 +2,8 @@
     "name": "ex",
     "version-string": "0.0.1",
     "dependencies": [
+        "abseil",
         "protobuf",  
-        "botan",
         "jansson",
         {
           "name": "botan",
@@ -13,5 +13,5 @@
         "openssl",
         "curl"
     ],
-    "builtin-baseline": "943c5ef1c8f6b5e6ced092b242c8299caae2ff01"
+    "builtin-baseline": "b1e15efef6758eaa0beb0a8732cfa66f6a68a81d"
 }
