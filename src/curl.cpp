@@ -129,12 +129,37 @@ namespace curlWrapper {
         // We are receiving both the headers and content because we want to extract the HTTP response. The
         // alternative could have been to use curl option --fail but the man page says it is not
         // fail safe.... :(
+
+        // We might be behind a proxy, without our knowledge!! So we must find the last Http response line and 
+        // look for the content from there....
+
+
         std::string         responseLine;
         std::getline(ss, responseLine);
 
         std::string         line;
+        std::string         lastHttpResponseLine;
+        std::streampos      lastHttpResponsePos;
+
+        // Find the last HTTP response line (handles both proxy and direct connections)
+        while (std::getline(ss, line)) {
+          if (!line.empty() && line.back() == '\r') {
+            line.pop_back();
+          }
+    
+          // Check if this line is an HTTP response
+          if (line.find("HTTP/") == 0) {
+            lastHttpResponseLine = line;
+            lastHttpResponsePos = ss.tellg(); // Position after this response line
+          }
+        }
+
+        // Now, process with the real server answer
+        // Reset stream and seek to after the last HTTP response line
+        ss.clear();
+        ss.seekg(lastHttpResponsePos);
         std::streampos      contentPosition;
-        bool foundHeaderEnd = false;
+        bool                foundHeaderEnd = false;
 
         while (std::getline(ss, line)) {
           // Remove \r if present (handle both \r\n and \n line endings)
@@ -154,11 +179,14 @@ namespace curlWrapper {
           std::deque<std::string>    decomposed = misc::split(responseLine, ' ');
           if (decomposed.size() >= 2) {
             if (decomposed[1] == "200") {
-              return ss.str().substr(contentPosition);    // Remaining data in ss is the content. There may be empty lines at the beginning
+              std::ostringstream content;
+              content << ss.str().substr(contentPosition);
+              DEBUG() << "Returning content\n" << content.str() << "\n";
+              return content.str();
             }
 
             if ( (decomposed[1] == "406") or (decomposed[1] == "418") ) {
-              // The server will NEVER response positively
+              // The server will NEVER respond positively
               throw permanentTangFailure(url + "-" + ss.str().substr(contentPosition));
             }
           }
