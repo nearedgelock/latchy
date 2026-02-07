@@ -19,14 +19,14 @@
 namespace assets {
   using namespace std::chrono_literals;
 
-  list::list(const secretCfgList_t& list, bool dump) {
+  list::list(const secretCfgList_t& list, bool compatibleMode, bool dump) {
     curlWrapper::globalInit();    // Tis is rquired once and it is Ok to call multiple time as a flag prevent redoing it.
 
     try {
       // We may have more than 1 item to process. Anyone of them may fail and trhow an exception.
       // In such case we will stop all of the successfully created assets and return.
       INFO() << "There are " << list.secrets().size() << " elements in the configuration. We expected to have that many assets" << std::endl;
-      processConfiguration(list, dump);
+      processConfiguration(list, compatibleMode, dump);
       DEBUG() << "Processing the configuration is complete, we have " << assets.size() << " assets" << std::endl;
       if (dump == false) {
         startAll();
@@ -48,14 +48,14 @@ namespace assets {
     DEBUG() << "Done building the assets, we have " << assets.size() << std::endl;
   }
 
-  void list::processConfiguration(const secretCfgList_t& list, bool dump) {
+  void list::processConfiguration(const secretCfgList_t& list, bool compatibleMode, bool dump) {
     // Walk the declaration list and set the assets. On failure we throw an exception.
     for (const auto asset : list.secrets()) {
       //
       // Asset ingress, ie source
       //
       DEBUG() << "Creating an asset source" << std::endl;
-      assetSource_p        source = createSource(asset, !dump);
+      assetSource_p        source = createSource(asset, !dump, compatibleMode);
       if (dump == true) {
         // We are simply asked to dump the JWE content and not actually perform the whole decryption operation
         source->dumpInfo();
@@ -108,7 +108,7 @@ namespace assets {
     }
   }
 
-  list::assetSource_p list::createSource(const secretCfg_t& cfg, bool autostart) {
+  list::assetSource_p list::createSource(const secretCfg_t& cfg, bool autostart, bool compatibleMode) {
     //
     // Asset ingress, ie source
     //
@@ -119,11 +119,11 @@ namespace assets {
       if (cfg.in().empty() == false) {
         // We assume that the input method is a file or a named pipe (the processing is the same)
         DEBUG() << "JWE source is file or named pipe" << std::endl;
-        source = std::make_shared<assetserver::assetFileClevis>(cfg.in(), metaData, autostart);
+        source = std::make_shared<assetserver::assetFileClevis>(cfg.in(), metaData, autostart, compatibleMode);
       } else if ( (cfg.imethod() == model::latchy::secretIngestionMethods::STDIN) or (cfg.imethod() == model::latchy::secretIngestionMethods::UNKNOWNINGESTION)) {
         // Assume STDIN
         DEBUG() << "JWE source is STDIN" << std::endl;
-        source = std::make_shared<assetserver::assetFileClevis>("", metaData, autostart);
+        source = std::make_shared<assetserver::assetFileClevis>("", metaData, autostart, compatibleMode);
       } else  if (cfg.imethod() == model::latchy::secretIngestionMethods::IENVVAR) {
         // Env var - Future
         throw unimplemented("Input asset from environment");

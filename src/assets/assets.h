@@ -45,17 +45,17 @@ namespace assets {
 
   public:
     list() { };
-    list(const secretCfgList_t& list, bool dump = false);
+    list(const secretCfgList_t& list, bool compatibleMode = false, bool dump = false);
     virtual ~list() { stopAll(); curlWrapper::globalCleanUp(); };   // curlWrapper::globalCleanUp should only be called once but there is only 1 list object to destroy anyway
 
-    void                        processConfiguration(const secretCfgList_t& list, bool dump);
+    void                        processConfiguration(const secretCfgList_t& list, bool compatibleMode, bool dump);
     void                        startAll();
     void                        stopAll();
   protected:
     assetList                   assets;
     meta::composition           metaData;
 
-    virtual assetSource_p       createSource(const secretCfg_t&, bool autostart);
+    virtual assetSource_p       createSource(const secretCfg_t&, bool autostart, bool compatibleMode);
     virtual asset_p             createProvider(const secretCfg_t&, assetSource_p src);
 
   public:

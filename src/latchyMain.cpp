@@ -31,6 +31,7 @@
 namespace latchy {
   using namespace std::chrono_literals;
   std::string     inputConfiguration;
+  bool            compatibleMode = false;
   bool            dumpHeader = false;
 
   void processCommandLine(int argc, char** argv) {
@@ -44,6 +45,7 @@ namespace latchy {
     // -d, --debug    Enable DEBUG level output (stderr), does include INFO as well
     // -t, --trace    Enable INFO level output (to stderr)
     // --dump         Simply dump the protected header (to stderr)
+    // --compatible   Do not include the query string. Typical tang servers won't accept it
     //
     
     DEBUG() << "We found " << argc << " arguments, including the process filename." << std::endl;
@@ -55,13 +57,16 @@ namespace latchy {
       }
     }    
 
+    constexpr int OPTION_COMPATIBLE = 1000;
+    constexpr int OPTION_DUMP = 1100;
     std::string                       shortOptions("hc:");
-    std::array<struct option, 6>      longOptions{{
+    std::array<struct option, 7>      longOptions{{
       {"help", no_argument, nullptr, 'h'},
       {"cfg", required_argument, nullptr, 'c'},
       {"debug", no_argument, nullptr, 'd'},
       {"trace", no_argument, nullptr, 't'},
-      {"dump", no_argument, nullptr, 1000+'d'},
+      {"compatible", no_argument, nullptr, OPTION_COMPATIBLE},
+      {"dump", no_argument, nullptr, OPTION_DUMP},
       {0, 0, 0, 0} },
     };
     while (1) {
@@ -105,7 +110,11 @@ namespace latchy {
         exit(-1);
         break;
 
-      case 1000+'d':
+      case OPTION_COMPATIBLE:
+        compatibleMode = true;
+        break;
+
+      case OPTION_DUMP:
         dumpHeader = true;
         break;
 
@@ -196,7 +205,7 @@ namespace latchy {
       INFO() << "Starting overall processing of the given configuration" << std::endl;
       if (configuration.empty() == false) { 
         DEBUG() << "The configuration string is " << configuration << std::endl;  
-        assets::list    assets(configuration::parseStringToMsg(configuration), dumpHeader);    // This also starts all the providers.
+        assets::list    assets(configuration::parseStringToMsg(configuration), compatibleMode, dumpHeader);    // This also starts all the providers.
         DEBUG() << "The assets were created and we should be fully running" << std::endl;
       } else {
         USERMSG() << "Missing configuration" << std::endl;

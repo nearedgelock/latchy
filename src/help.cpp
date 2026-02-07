@@ -48,11 +48,12 @@ void showHelp() {
 
     << "\n" \
     << "Command line arguments" << "\n" \
-    << "\t\"--cfg\"   - JSON configuration string (see below for details)" << "\n" \
-    << "\t\"--debug\" - Verbose debugging output (on stderr)" << "\n" \
-    << "\t\"--dump\"  - Output the content of the protected header of the JWE and exit. Do not perform decryption" << "\n" \
-    << "\t\"--help\"  - This help" << "\n" \
-    << "\t\"--trace\" - Minimal information (on stderr)" << "\n" \
+    << "\t\"--cfg\"        - JSON configuration string (see below for details)" << "\n" \
+    << "\t\"--compatible\" - Support TANG with strict API content" << "\n" \
+    << "\t\"--debug\"      - Verbose debugging output (on stderr)" << "\n" \
+    << "\t\"--dump\"       - Output the content of the protected header of the JWE and exit. Do not perform decryption" << "\n" \
+    << "\t\"--help\"       - This help" << "\n" \
+    << "\t\"--trace\"      - Minimal information (on stderr)" << "\n" \
 
     << "\n" \
     << "JSON configuration string. This is an array providing 1 or more configurations, each pertaining to a single" << "\n" \

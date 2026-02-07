@@ -116,7 +116,7 @@ namespace assetserver {
   //
   class assetFileClevis: public assetFile {
   public:
-    assetFileClevis(const std::string& f, const meta::composition& m, bool autoStart);
+    assetFileClevis(const std::string& f, const meta::composition& m, bool autoStart, bool compatibleMode);
     virtual ~assetFileClevis() { cancel(); freeJson(); };
 
     void                            startUnsealing();
@@ -127,6 +127,7 @@ namespace assetserver {
     void                            dumpInfo(bool all = false) const { if (all) { printJWE(true); }printProtectedHeader(true); };
     void                            printInfo() const { printEPK(); printEPKCurve(); printKID(); printAllKeys(); printSelectedKey(); printUnwrappingJWK(); printSelectedServerKey(); printProtectedHeader(); };
   protected:
+    bool                            compatibleMode = false;
     const meta::composition&        meta;
     mutable std::future<void>       jweExtractTask;    // We will be using an std::async to extract from the JWE...
     mutable std::atomic<bool>       isDone = false;

@@ -34,7 +34,7 @@ namespace assetserver {
   // tang pins is doing.
   //
 
-  assetFileClevis::assetFileClevis(const std::string& f, const meta::composition& m, bool autoStart): assetFile(f), meta(m) {
+  assetFileClevis::assetFileClevis(const std::string& f, const meta::composition& m, bool autoStart, bool c): assetFile(f), meta(m), compatibleMode(c) {
     // The base class already makes sure that the input JWE file is there and readable.
     // All is left is to
     // - perform the base processing, which includes validation of the JWE
@@ -178,6 +178,9 @@ namespace assetserver {
   }
 
   const std::string assetFileClevis::queryString() {
+    if (compatibleMode == true) {
+      return "";
+    }
     std::string       qs;   // Does not include the '?' opening character
 
     std::string       idValue = meta.getComposedHash();
