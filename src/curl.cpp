@@ -17,6 +17,7 @@
 #include <cstring>
 #include "curl.h"
 #include <curl/curl.h>      // From libcurl
+#include <openssl/crypto.h>
 
 #include "helpers/forkExec.h"
 #include "helpers/stringSplit.h"
@@ -29,6 +30,7 @@ namespace curlWrapper {
   void globalInit() {
     if (isGlobalInit == false ) {
       curl_global_init(CURL_GLOBAL_ALL);
+      OPENSSL_init_crypto(OPENSSL_INIT_NO_LOAD_CONFIG, nullptr);    // This is an attempt at avoiding the 1st on fedora. This prevents using /etc/ssl/openssl.cnf
       isGlobalInit = true;
     }
   }

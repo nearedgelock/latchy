@@ -155,6 +155,7 @@ namespace assetserver {
           throw  unavailable("Waited too long for Tang access, we gave up");
         }
         std::this_thread::sleep_for (requestInterval);
+        requestInterval = 10s;
       }
     }
 

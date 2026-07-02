@@ -162,7 +162,7 @@ namespace assetserver {
 
     mutable std::string             jwk;
 
-    const std::chrono::seconds      requestInterval = 15s;
+    std::chrono::seconds            requestInterval = 1s;
 
     void                            printEPK() const { DEBUG() << "EPK: " << joseLibWrapper::prettyPrintJson(epk_j) << std::endl; };
     void                            printEPKCurve() const { DEBUG() << "EPK Curve: " << joseLibWrapper::prettyPrintJson(epkCurve_j) << std::endl; };
