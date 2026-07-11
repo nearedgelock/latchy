@@ -145,14 +145,24 @@ namespace assetserver {
         recoveringKey_pubFromTang = curlWrapper::keyRecoverViaTang(extractedUrl, json_string_value(kid_j), exchangeKey_pub, queryString(), isCancelled);
         exchangeKey_pub.assign(exchangeKey_pub.size(), (char) 0);  // Clear the memory
         break;
-      } catch (joseLibWrapper::decrypt::permanentTangFailure& exc) {
+      } catch (curlWrapper::notFoundTangFailure& exc) {
+        //
+        DEBUG() << "Got a 404, we may try with the compatible mode";
+        if (compatibleMode == false) {
+          // Lets try with the compatible mode next time...
+          compatibleMode = true;
+          std::this_thread::sleep_for (1s);   // Just good practice
+        } else {
+          throw;
+        }
+      } catch (curlWrapper::permanentTangFailure& exc) {
         // Permanent error, just rethrow to higher up
         throw;
       } catch (std::exception& exc) {
         // Other errors are temporary. Authorization may come later so we retry in a little while, unless
         // we need to give up!!
         if (std::chrono::steady_clock::now() > giveUpTime) {
-          throw  unavailable("Waited too long for Tang access, we gave up");
+          throw  unavailable("Waited too long for Tang access, we give up");
         }
         std::this_thread::sleep_for (requestInterval);
         requestInterval = 10s;

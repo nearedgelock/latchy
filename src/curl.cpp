@@ -187,6 +187,12 @@ namespace curlWrapper {
               return content.str();
             }
 
+            if ( decomposed[1] == "404" ) {
+              // The server is likely a stand alone tang and did not accepted the request (likely not using the
+              // compatible mode)
+              throw notFoundTangFailure();
+            }
+
             if ( (decomposed[1] == "406") or (decomposed[1] == "418") ) {
               // The server will NEVER respond positively
               throw permanentTangFailure(url + "-" + ss.str().substr(contentPosition));

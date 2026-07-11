@@ -37,6 +37,11 @@ namespace curlWrapper {
     failedTangInteraction(const std::string& msg = ""): curlException ("Error communicating with tang " + ((msg.empty() == false) ? (" - " + msg) : "")) { };
   };
 
+  class notFoundTangFailure: public curlException {
+  public:
+    notFoundTangFailure(const std::string& msg = ""): curlException ("Got a 404 from tang " + ((msg.empty() == false) ? (" - " + msg) : "")) { };
+  };
+
   class permanentTangFailure: public curlException {
   public:
     permanentTangFailure(const std::string& msg = ""): curlException ("Permanent failure from tang " + ((msg.empty() == false) ? (" - " + msg) : "")) { };
